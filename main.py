@@ -53,6 +53,40 @@ def moveOneQueen(board):
     return board
 
 
+def steepestHill(board):
+    moves = {}
+    for col in range(len(board)):
+        for row in range(len(board)):
+            board_copy = list(board)
+            board_copy[col] = row
+            moves[(col, row)] = getHeuristic(board_copy)
+
+    best_moves = []
+    initial_heuristic = getHeuristic(board)
+
+
+
+    for k, v in moves.items():
+        if v < initial_heuristic:
+            initial_heuristic = v
+
+    for k, v in moves.items():
+        if v == initial_heuristic:
+            best_moves.append(k)
+
+
+
+    # Pick a random best move
+    if len(best_moves) > 0:
+        pick = random.randint(0, len(best_moves) -1)
+        col = best_moves[pick][0]
+        row = best_moves[pick][1]
+        board[col] = row
+
+
+    return board
+
+
 # ------------------------------------------
 # Prints the chess board with:
 #  - positions of 'Q's retrieved from the index of our random number list
@@ -77,17 +111,35 @@ def main():
     # Generate a random initial state, display board and get heuristic
     random_initial_board = getRandomNumbers(N)
     displayBoard(random_initial_board)
-    heuristic = getHeuristic(random_initial_board)
-    print("Heuristic Value:", heuristic)
     print("Random Initial State:", random_initial_board)
+    print("Heuristic Value:", getHeuristic(random_initial_board))
+
 
     # Move one queen and get heuristic
     move_one = moveOneQueen(random_initial_board)
     print("\nMoving one position: ", move_one)
-    move_one_heuristic = getHeuristic(move_one)
-    print("Heuristic Value:", move_one_heuristic)
+    move_one_heu = getHeuristic(move_one)
+    print("Heuristic Value:", move_one_heu)
 
+    # Steepest hill climbing
+    steepest_hill = steepestHill(random_initial_board)
+    print("\nSteepest hill:       ", steepest_hill)
+    steepest_hill_heu = getHeuristic(steepest_hill)
+    print("Heuristic Value:", steepest_hill_heu)
 
+    # Random restart hill climbing
+    best_conf = None
+    new_random = getRandomNumbers(N)
+    new_steepest_hill = steepestHill(new_random)
+    print("\nNew Steepest hill:   ", new_steepest_hill)
+    new_steepest_hill_heu = getHeuristic(new_steepest_hill)
+    print("Heuristic Value:", new_steepest_hill_heu)
+
+    print("")
+    if new_steepest_hill_heu < steepest_hill_heu:
+        print("New solution better  ", steepest_hill)
+    else:
+        print("Old solution better  ", new_steepest_hill)
 
 
 if __name__ == '__main__':
