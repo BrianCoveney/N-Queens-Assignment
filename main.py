@@ -106,6 +106,8 @@ def randomRestartHillClimb(steepest_hill, steepest_hill_heu):
     restart_count = 0
     count_new_solution = 0
     count_old_solution = 0
+    best_solution = []
+    total_number_of_moves = 0
 
     while restart_count < restarts:
         new_random = getRandomNumbers(N)
@@ -114,22 +116,21 @@ def randomRestartHillClimb(steepest_hill, steepest_hill_heu):
 
         print("")
 
-        best = []
         if new_steepest_hill_heu == 0:
-            print("Correct Answer found in New Steepest Hill, at count: ", count_new_solution, "\n",
+            print("Correct Answer found in New Steepest Hill count: ", count_new_solution, "\n",
                   new_steepest_hill, sep="")
 
-            best = new_steepest_hill
-            displayBoard(best)
-            return best
+            best_solution = new_steepest_hill
+            displayBoard(best_solution)
+            return best_solution
 
         elif steepest_hill_heu == 0:
-            print("Correct Answer found in Old Steepest Hill, at count: ", count_old_solution, "\n",
+            print("Correct Answer found in Old Steepest Hill count: ", count_old_solution, "\n",
                   steepest_hill, sep="")
 
-            best = steepest_hill
-            displayBoard(best)
-            return best
+            best_solution = steepest_hill
+            displayBoard(best_solution)
+            return best_solution
 
         else:
             if new_steepest_hill_heu < steepest_hill_heu:
@@ -145,12 +146,11 @@ def randomRestartHillClimb(steepest_hill, steepest_hill_heu):
 
         restart_count = restart_count + 1
 
+        total_number_of_moves = count_old_solution + count_new_solution
+        print("\nTotal number of moves:", total_number_of_moves)
 
-    print("\nCount for new solution:", count_new_solution)
-    print("Count for old solution:", count_old_solution)
 
-
-    return best
+    return best_solution
 
 
 def main():
