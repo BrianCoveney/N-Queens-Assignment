@@ -1,49 +1,27 @@
 import random
 
+global N
+N = 8
+
 
 # ------------------------------------------
 # Returns the heuristic value of our initial board state
-# - outer loop is the rows in the range of our random
 # ------------------------------------------
-def getHeuristic(random_list):
+def getHeuristic(board):
     heuristic = 0
+    for row in range(len(board)):
 
-    for row in range(len(random_list)):
-        for col in range(row + 1, len(random_list)):
-            # Increment our heuristic if there are Queens are in the same row
-            if random_list[row] == random_list[col]:
+        for col in range(row + 1, len(board)):
+
+            if board[row] == board[col]:
                 heuristic += 1
-            # Get the difference between the current column
-            # and the check column
+
             offset = col - row
-            # To be a diagonal, the check column value has to be
-            # equal to the current column value +/- the offset
-            if random_list[row] == random_list[col] - offset  or random_list[row] == random_list[col] + offset:
+
+            if board[row] == board[col] - offset or board[row] == board[col] + offset:
                 heuristic += 1
 
     return heuristic
-
-
-def make_move_first_choice(board):
-    h_to_beat = getHeuristic(board)
-    for col in range(len(board)):
-        for row in range(len(board)):
-            if board[col] == row:
-                # We don't need to evaluate the current
-                # position, we already know the h-value
-                continue
-
-            board_copy = list(board)
-            # Move the queen to the new row
-            board_copy[col] = row
-            new_h_cost = getHeuristic(board_copy)
-
-            # Return the first better (not best!) match you find
-            if new_h_cost < h_to_beat:
-                board[col] = row
-                return board
-
-    return board
 
 
 # ------------------------------------------
@@ -54,7 +32,25 @@ def getRandomNumbers(num_queens):
     for n in range(num_queens):
         numbers.append(n)
     random.shuffle(numbers)
+
     return numbers
+
+
+def moveOneQueen(board):
+    initial_heuristic = getHeuristic(board)
+    for col in range(len(board)):
+        for row in range(len(board)):
+            board_copy = list(board)
+            # Move queen
+            board_copy[row], board_copy[col] = board_copy[col], board_copy[row]
+            new_heuristic = getHeuristic(board_copy)
+
+            # Return the first better (not best!) match you find
+            if new_heuristic < initial_heuristic:
+                board[col] = board[row]
+                return board
+
+    return board
 
 
 # ------------------------------------------
@@ -62,14 +58,13 @@ def getRandomNumbers(num_queens):
 #  - positions of 'Q's retrieved from the index of our random number list
 #  - otherwise positions are left blank
 # ------------------------------------------
-def displayBoard(num_queens, numbers):
-
-    for row in range(num_queens):
+def displayBoard(board):
+    for row in range(len(board)):
         print("", end="|")
 
-        queen = numbers.index(row)
+        queen = board.index(row)
 
-        for col in range(num_queens):
+        for col in range(len(board)):
             if col == queen:
                 print("Q", end="|")
             else:
@@ -77,24 +72,21 @@ def displayBoard(num_queens, numbers):
         print("")
 
 
-# ------------------------------------------
-# Returns the selected number of queens
-# Allows for changing the size of the board
-# ------------------------------------------
-def getNumQueens(count):
-    return count
-
-
 def main():
-    num_queens = getNumQueens(8)
 
-    random_list = getRandomNumbers(num_queens)
-    print("Random Initial State:", random_list)
-
-    displayBoard(num_queens, random_list)
-
-    heuristic = getHeuristic(random_list)
+    # Generate a random initial state, display board and get heuristic
+    random_initial_board = getRandomNumbers(N)
+    displayBoard(random_initial_board)
+    heuristic = getHeuristic(random_initial_board)
     print("Heuristic Value:", heuristic)
+    print("Random Initial State:", random_initial_board)
+
+    # Move one queen and get heuristic
+    move_one = moveOneQueen(random_initial_board)
+    print("\nMoving one position: ", move_one)
+    move_one_heuristic = getHeuristic(move_one)
+    print("Heuristic Value:", move_one_heuristic)
+
 
 
 
