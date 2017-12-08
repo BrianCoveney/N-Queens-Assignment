@@ -64,8 +64,6 @@ def steepestHill(board):
     best_moves = []
     initial_heuristic = getHeuristic(board)
 
-
-
     for k, v in moves.items():
         if v < initial_heuristic:
             initial_heuristic = v
@@ -74,15 +72,12 @@ def steepestHill(board):
         if v == initial_heuristic:
             best_moves.append(k)
 
-
-
     # Pick a random best move
     if len(best_moves) > 0:
         pick = random.randint(0, len(best_moves) -1)
         col = best_moves[pick][0]
         row = best_moves[pick][1]
         board[col] = row
-
 
     return board
 
@@ -106,6 +101,33 @@ def displayBoard(board):
         print("")
 
 
+def randomRestartHillClimb(steepest_hill, steepest_hill_heu):
+    restarts = 500
+    count = 0
+    count_new_solution = 0
+    count_old_solution = 0
+
+    while count < restarts:
+        new_random = getRandomNumbers(N)
+        new_steepest_hill = steepestHill(new_random)
+        print("\nNew Steepest hill:   ", new_steepest_hill)
+        new_steepest_hill_heu = getHeuristic(new_steepest_hill)
+        print("Heuristic Value:", new_steepest_hill_heu)
+
+        print("")
+
+        if new_steepest_hill_heu < steepest_hill_heu:
+            print("New solution better  ", steepest_hill)
+            count_new_solution = count_new_solution + 1
+        else:
+            print("Old solution better  ", new_steepest_hill)
+            count_old_solution = count_old_solution + 1
+        count = count + 1
+
+    print("\nCount for new solution:", count_new_solution)
+    print("Count for old solution:", count_old_solution)
+
+
 def main():
 
     # Generate a random initial state, display board and get heuristic
@@ -114,6 +136,7 @@ def main():
     print("Random Initial State:", random_initial_board)
     print("Heuristic Value:", getHeuristic(random_initial_board))
 
+    print("------------------------------------------")
 
     # Move one queen and get heuristic
     move_one = moveOneQueen(random_initial_board)
@@ -121,25 +144,18 @@ def main():
     move_one_heu = getHeuristic(move_one)
     print("Heuristic Value:", move_one_heu)
 
+    print("------------------------------------------")
+
     # Steepest hill climbing
     steepest_hill = steepestHill(random_initial_board)
     print("\nSteepest hill:       ", steepest_hill)
     steepest_hill_heu = getHeuristic(steepest_hill)
     print("Heuristic Value:", steepest_hill_heu)
 
-    # Random restart hill climbing
-    best_conf = None
-    new_random = getRandomNumbers(N)
-    new_steepest_hill = steepestHill(new_random)
-    print("\nNew Steepest hill:   ", new_steepest_hill)
-    new_steepest_hill_heu = getHeuristic(new_steepest_hill)
-    print("Heuristic Value:", new_steepest_hill_heu)
+    print("------------------------------------------")
 
-    print("")
-    if new_steepest_hill_heu < steepest_hill_heu:
-        print("New solution better  ", steepest_hill)
-    else:
-        print("Old solution better  ", new_steepest_hill)
+    # Random restart hill climbing
+    randomRestartHillClimb(steepest_hill, steepest_hill_heu)
 
 
 if __name__ == '__main__':
