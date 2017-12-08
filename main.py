@@ -49,8 +49,11 @@ def make_move_first_choice(board):
 # ------------------------------------------
 # Return as list of random numbers
 # ------------------------------------------
-def getRandomNumbers():
-    numbers = [3, 4, 7, 5, 0, 2, 1, 6]
+def getRandomNumbers(num_queens):
+    numbers = []
+    for n in range(num_queens):
+        numbers.append(n)
+    random.shuffle(numbers)
     return numbers
 
 
@@ -59,12 +62,12 @@ def getRandomNumbers():
 #  - positions of 'Q's retrieved from the index of our random number list
 #  - otherwise positions are left blank
 # ------------------------------------------
-def displayBoard(num_queens):
+def displayBoard(num_queens, numbers):
 
     for row in range(num_queens):
         print("", end="|")
 
-        queen = getRandomNumbers().index(row)
+        queen = numbers.index(row)
 
         for col in range(num_queens):
             if col == queen:
@@ -85,15 +88,15 @@ def getNumQueens(count):
 def main():
     num_queens = getNumQueens(8)
 
-    random_list = getRandomNumbers()
+    random_list = getRandomNumbers(num_queens)
     print("Random Initial State:", random_list)
+
+    displayBoard(num_queens, random_list)
 
     heuristic = getHeuristic(random_list)
     print("Heuristic Value:", heuristic)
 
-    # first_choice_hc = make_move_first_choice(random_list)
-    # print(first_choice_hc)
-    displayBoard(num_queens)
+
 
 if __name__ == '__main__':
     main()
