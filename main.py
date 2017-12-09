@@ -206,10 +206,6 @@ def displayBoard(board):
         print("")
 
 
-    # ("Move One processing time            %s seconds" % (time.time() - mo_start_time))
-
-
-
 def main():
     # Random Initial State
     random_initial_board = getRandomNumbers(N)
@@ -219,21 +215,13 @@ def main():
 
     print("------------------------------------------")
 
-    mo_start_time = time.time()
-
     # Move One Queen
     move_one = moveOneQueen(random_initial_board)
     print("\nMoving one position: ", move_one)
     move_one_heu = getHeuristic(move_one)
     print("Heuristic Value:", move_one_heu)
 
-    mo_processing_time = time.time() - mo_start_time
-    mo_display_time = "Move One processing time            %s seconds" % mo_processing_time
-
-
     print("------------------------------------------")
-
-    sh_start_time = time.time()
 
     # Steepest Hill Climbing
     steepest_hill = steepestHill(random_initial_board)
@@ -241,55 +229,19 @@ def main():
     steepest_hill_heu = getHeuristic(steepest_hill)
     print("Heuristic Value:", steepest_hill_heu)
 
-    sh_processing_time = time.time() - sh_start_time
-    sh_display_time = "Steepest Hill processing time       %s seconds" % sh_processing_time
-
-
     print("------------------------------------------")
-
-    rrhc_start_time = time.time()
 
     # Random Restart Hill Climbing
     solution = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
     displayBoard(solution)
 
-    rrhc_processing_time = time.time() - rrhc_start_time
-    rrhc_display_time = "Random Restart Hill processing time %s seconds" % rrhc_processing_time
-
-
     print("\n------------------------------------------")
-
-    sa_start_time = time.time()
 
     # Simulated Annealing
     print("\nCorrect Answer found in Simulated Annealing")
     simulated_annealing = annealing(random_initial_board)
     print(simulated_annealing)
     displayBoard(simulated_annealing)
-
-    sa_processing_time = time.time() - sa_start_time
-    sa_dsplay_time = "Simulated Annealing processing time %s seconds" % sa_processing_time
-
-    print("\n------------------------------------------")
-
-    # Display processing time of each algorithm
-    print(mo_display_time)
-    print(sh_display_time)
-    print(rrhc_display_time)
-    print(sa_dsplay_time)
-
-    algos = ('Steepest Hill','Annealing')
-    y_pos = np.arange(len(algos))
-    # performance = [mo_processing_time, sh_processing_time, rrhc_processing_time, sa_processing_time]
-    performance = [sh_processing_time,  sa_processing_time]
-
-
-    plt.bar(y_pos, performance, align='center', alpha=0.5)
-    plt.xticks(y_pos, algos)
-    plt.ylabel("Seconds")
-    plt.title("Performance of Algorithms on 8 Queens")
-    plt.show()
-
 
 
 if __name__ == '__main__':
