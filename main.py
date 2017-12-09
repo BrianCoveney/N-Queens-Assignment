@@ -1,4 +1,5 @@
 import random
+import math
 
 global N
 N = 8
@@ -10,32 +11,19 @@ N = 8
 def getHeuristic(board):
     heuristic = 0
     for row in range(len(board)):
-
         for col in range(row + 1, len(board)):
-
             if board[row] == board[col]:
                 heuristic += 1
 
             offset = col - row
-
             if board[row] == board[col] - offset or board[row] == board[col] + offset:
                 heuristic += 1
-
     return heuristic
 
 
 # ------------------------------------------
-# Return a list of random numbers
+# Move One Queen Algorithm
 # ------------------------------------------
-def getRandomNumbers(num_queens):
-    numbers = []
-    for n in range(num_queens):
-        numbers.append(n)
-    random.shuffle(numbers)
-
-    return numbers
-
-
 def moveOneQueen(board):
     initial_heuristic = getHeuristic(board)
     for col in range(len(board)):
@@ -53,6 +41,9 @@ def moveOneQueen(board):
     return board
 
 
+# ------------------------------------------
+# Steepest Hill Algorithm
+# ------------------------------------------
 def steepestHill(board):
     moves = {}
     for col in range(len(board)):
@@ -83,24 +74,8 @@ def steepestHill(board):
 
 
 # ------------------------------------------
-# Prints the chess board with:
-#  - positions of 'Q's retrieved from the index of our random number list
-#  - otherwise positions are left blank
+# Random Restart Algorithm
 # ------------------------------------------
-def displayBoard(board):
-    for row in range(len(board)):
-        print("", end="|")
-
-        queen = board.index(row)
-
-        for col in range(len(board)):
-            if col == queen:
-                print("Q", end="|")
-            else:
-                print("_", end="|")
-        print("")
-
-
 def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
     restarts = 500
     restart_count = 0
@@ -128,7 +103,7 @@ def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
             best_solution = old_steepest_hill
             return best_solution
 
-        # Otherwise, print which is the better algorithm
+        # Otherwise, display which is the better algorithm
         else:
             if new_steepest_hill_heu < old_steepest_hill_heu:
                 print("Count New:",count_new_solution)
@@ -147,12 +122,83 @@ def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
         total_number_of_moves = count_old_solution + count_new_solution
         print("\nTotal number of moves:", total_number_of_moves)
 
+
+
     return best_solution
 
 
-def main():
+def annealing(board):
+    temp = len(board) ** 2
+    anneal_rate = 0.95
+    heu_cost = getHeuristic(board)
 
-    # Generate a random initial state, display board and get heuristic
+    while heu_cost > 0:
+        board = makeMove(board, heu_cost, temp)
+        heu_cost = getHeuristic(board)
+        # Make sure temp doesn't get impossibly low
+        new_temp = max(temp * anneal_rate, 0.01)
+        temp = new_temp
+        if temp >= 50000:
+            break
+
+    return board
+
+
+def makeMove(board, heu_cost, temp):
+    board_copy = list(board)
+    found_move = False
+
+    while not found_move:
+        board_copy = list(board)
+        new_row = random.randint(0, len(board) - 1)
+        new_col = random.randint(0, len(board) - 1)
+        board_copy[new_col] = new_row
+        new_h_cost = getHeuristic(board_copy)
+        if new_h_cost < heu_cost:
+            found_move = True
+        else:
+            # How bad was the choice?
+            delta_e = heu_cost - new_h_cost
+            # Probability can never exceed 1
+            accept_probability = min(1, math.exp(delta_e / temp))
+            found_move = random.random() <= accept_probability
+
+    return board_copy
+
+
+# ------------------------------------------
+# Return a list of random numbers
+# ------------------------------------------
+def getRandomNumbers(num_queens):
+    numbers = []
+    for n in range(num_queens):
+        numbers.append(n)
+    random.shuffle(numbers)
+
+    return numbers
+
+
+# ------------------------------------------
+# Prints the chess board with:
+#  - positions of 'Q's retrieved from the index of our random number list
+#  - otherwise positions are left blank
+# ------------------------------------------
+def displayBoard(board):
+    for row in range(len(board)):
+        print("", end="|")
+
+        queen = board.index(row)
+
+        for col in range(len(board)):
+            if col == queen:
+                print("Q", end="|")
+            else:
+                print("_", end="|")
+        print("")
+
+
+def main():
+    # Random Initial State
     random_initial_board = getRandomNumbers(N)
     displayBoard(random_initial_board)
     print("Random Initial State:", random_initial_board)
@@ -160,7 +206,7 @@ def main():
 
     print("------------------------------------------")
 
-    # Move one queen and get heuristic
+    # Move One Queen
     move_one = moveOneQueen(random_initial_board)
     print("\nMoving one position: ", move_one)
     move_one_heu = getHeuristic(move_one)
@@ -168,7 +214,7 @@ def main():
 
     print("------------------------------------------")
 
-    # Steepest hill climbing
+    # Steepest Hill Climbing
     steepest_hill = steepestHill(random_initial_board)
     print("\nSteepest hill:       ", steepest_hill)
     steepest_hill_heu = getHeuristic(steepest_hill)
@@ -176,10 +222,15 @@ def main():
 
     print("------------------------------------------")
 
-    # Random restart hill climbing
+    # Random Restart Hill Climbing
     solution = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
     displayBoard(solution)
 
+    # Simulated Annealing
+    print("\nCorrect Answer found in Simulated Annealing")
+    simulated_annealing = annealing(random_initial_board)
+    print(simulated_annealing)
+    displayBoard(simulated_annealing)
 
 if __name__ == '__main__':
     main()
