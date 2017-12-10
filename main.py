@@ -92,7 +92,7 @@ def steepestHill(board):
 # :param old_steepest_hill_heu: Heuristic for the old_steepest_hill
 # :return: solution configuration found and a running count
 # ------------------------------------------
-def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
+def randomRestartHillClimb(new_random, old_steepest_hill, old_steepest_hill_heu):
     restarts = 500
     restart_count = 0
     count_new_solution = 0
@@ -102,7 +102,6 @@ def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
     # Initially set the maximum number of restarts to 500
     while restart_count < restarts:
         # Generate a new random configuration for the initial state of the board, and get it's heuristic
-        new_random = getRandomNumbers(N)
         new_random_steepest_hill = steepestHill(new_random)
         new_steepest_hill_heu = getHeuristic(new_random_steepest_hill)
 
@@ -190,20 +189,23 @@ def makeMove(board, heu_cost, temp):
 def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
     # Run our RR-HC and the RR-SA algorithms through boards ranging n=8 to n=25
     # Find the best performing algorithm, i.e. the number of moves to reach optimal solution
-    i = 0
+    i = 8
     rrhc_moves = []
     rrsa_moves = []
-    random_initial_board = getRandomNumbers(N)
 
-    while i < 17:
+    while i <= 25:
 
-        if heu_rrhc == 0:
-            solution_rrhc, rrhc_count = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
-            rrhc_moves.append(rrhc_count)
+        print(i)
+
+        random_initial_board = getRandomNumbers(i)
 
         if heu_annealing == 0:
             solution_annealing, sa_count = annealing(random_initial_board)
             rrsa_moves.append(sa_count)
+
+        if heu_rrhc == 0:
+            solution_rrhc, rrhc_count = randomRestartHillClimb(random_initial_board, steepest_hill, steepest_hill_heu)
+            rrhc_moves.append(rrhc_count)
 
         i += 1
 
@@ -267,7 +269,7 @@ def main():
 
     # Random Restart Hill Climbing
     print("\nCorrect Answer found in RR-HC")
-    solution_rrhc, rrhc_count = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
+    solution_rrhc, rrhc_count = randomRestartHillClimb(random_initial_board, steepest_hill, steepest_hill_heu)
     heu_rrhc = getHeuristic(solution_rrhc)
     print(solution_rrhc)
     print("Total moves:", rrhc_count)
@@ -291,37 +293,16 @@ def main():
     print("\n 17 No. moves taken by RR-HC", rrhc_moves)
     print("\n 17 No. moves taken by RR-SA", rrsa_moves)
 
-    # 8 Queens example:
-    # 17 No. moves taken by RR-HC [67, 190, 14, 78, 131, 153, 208, 31, 500, 500, 377, 500, 387, 326, 152, 32, 500]
-    # 17 No. moves taken by RR-SA [107, 124, 351, 112, 270, 178, 135, 316, 196, 146, 154, 359, 235, 133, 326, 413, 378]
+    # 17 No. moves taken by RR-HC [39, 0, 155, 51, 490, 55, 349, 232, 215, 6, 137, 126, 55, 27, 8, 158, 110, 1, 280]
+    # 17 No. moves taken by RR-SA [99, 212, 472, 819, 445, 196, 146, 256, 695, 477, 752, 370, 212, 327, 475, 245, 251, 1334, 692]
+
+    # 17 No. moves taken by RR-HC [1, 500, 32, 500, 500, 51, 113, 372, 201, 61, 131, 18, 33, 5, 403, 64, 56, 178, 17]
+    # 17 No. moves taken by RR-SA [152, 282, 205, 50000, 257, 852, 182, 685, 426, 300, 173, 367, 329, 376, 343, 362, 1054, 281, 1046]
 
 
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
