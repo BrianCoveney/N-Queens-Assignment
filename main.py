@@ -146,7 +146,10 @@ def annealing(board):
         # Make sure temp doesn't get impossibly low
         new_temp = max(temp * anneal_rate, 0.01)
         temp = new_temp
-        if temp >= 50000:
+
+        # It is possible that the algorithm will get stuck.
+        # To prevent this, I have limited the iterations to 50000
+        if count >= 50000:
             break
 
     return board, count
@@ -285,8 +288,12 @@ def main():
     # Evaluation
     print("\nEvaluation:")
     rrhc_moves, rrsa_moves = evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu)
-    print(rrhc_moves)
-    print(rrsa_moves)
+    print("\n 17 No. moves taken by RR-HC", rrhc_moves)
+    print("\n 17 No. moves taken by RR-SA", rrsa_moves)
+
+    # 8 Queens example:
+    # 17 No. moves taken by RR-HC [67, 190, 14, 78, 131, 153, 208, 31, 500, 500, 377, 500, 387, 326, 152, 32, 500]
+    # 17 No. moves taken by RR-SA [107, 124, 351, 112, 270, 178, 135, 316, 196, 146, 154, 359, 235, 133, 326, 413, 378]
 
 
 
