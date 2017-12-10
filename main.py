@@ -6,13 +6,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Parametrised number of Queens
 global N
 N = 8
 
 
-
 # ------------------------------------------
+# Heuristic
 # Return the heuristic value of our initial board state
+# :param board: board configuration
+# :return: heuristic cost
 # ------------------------------------------
 def getHeuristic(board):
     heuristic = 0
@@ -29,6 +32,8 @@ def getHeuristic(board):
 
 # ------------------------------------------
 # Move One Queen Algorithm
+# :param board: random board configuration
+# :return: solution configuration found
 # ------------------------------------------
 def moveOneQueen(board):
     initial_heuristic = getHeuristic(board)
@@ -49,6 +54,8 @@ def moveOneQueen(board):
 
 # ------------------------------------------
 # Steepest Hill Algorithm
+# :param board: random board configuration
+# :return: solution configuration found
 # ------------------------------------------
 def steepestHill(board):
     moves = {}
@@ -81,6 +88,9 @@ def steepestHill(board):
 
 # ------------------------------------------
 # Random Restart Algorithm
+# :param old_steepest_hill: List returned from the steepestHill() algorithm
+# :param old_steepest_hill_heu: Heuristic for the old_steepest_hill
+# :return: solution configuration found and a running count
 # ------------------------------------------
 def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
     restarts = 500
@@ -91,55 +101,46 @@ def randomRestartHillClimb(old_steepest_hill, old_steepest_hill_heu):
 
     # Initially set the maximum number of restarts to 500
     while restart_count < restarts:
-        # Generate a new random configuration for the initial state of the board
+        # Generate a new random configuration for the initial state of the board, and get it's heuristic
         new_random = getRandomNumbers(N)
-        new_steepest_hill = steepestHill(new_random)
-        new_steepest_hill_heu = getHeuristic(new_steepest_hill)
-        print("")
+        new_random_steepest_hill = steepestHill(new_random)
+        new_steepest_hill_heu = getHeuristic(new_random_steepest_hill)
 
         # A solution was found for our new random state. Print details and exit.
         if new_steepest_hill_heu == 0:
-            print("Correct Answer found in New Steepest Hill count: ",count_new_solution,"\n", new_steepest_hill,sep="")
-            best_solution = new_steepest_hill
-            return best_solution
+            best_solution = new_random_steepest_hill
+            return best_solution, count_new_solution
 
-        # A solution was found for out steepest ascent algorithm. Print details and exit.
+        # A solution was found for our steepest ascent algorithm. Print details and exit.
         elif old_steepest_hill_heu == 0:
-            print("Correct Answer found in Old Steepest Hill count: ",count_old_solution,"\n",old_steepest_hill,sep="")
             best_solution = old_steepest_hill
-            return best_solution
+            return best_solution, count_old_solution
 
         # Otherwise, display which is the better algorithm
         else:
             if new_steepest_hill_heu < old_steepest_hill_heu:
-                print("Count New:",count_new_solution)
-                print("New solution better  ", old_steepest_hill)
-                print("Heuristic Value:", new_steepest_hill_heu)
                 count_new_solution = count_new_solution + 1
             else:
-                print("Count Old:", count_old_solution)
-                print("Old solution better  ", new_steepest_hill)
-                print("Heuristic Value:", old_steepest_hill_heu)
                 count_old_solution = count_old_solution + 1
 
         restart_count = restart_count + 1
 
-        # Display total number of moves
-        total_number_of_moves = count_old_solution + count_new_solution
-        print("\nTotal number of moves:", total_number_of_moves)
-
-    return best_solution
+    return best_solution, restart_count
 
 
 # ------------------------------------------
 # Simulated Annealing Algorithm
+# :param board: random board configuration
+# :return: solution configuration found and a running count
 # ------------------------------------------
 def annealing(board):
     temp = len(board) ** 2
     anneal_rate = 0.95
     heu_cost = getHeuristic(board)
+    count = 0
 
     while heu_cost > 0:
+        count = count + 1
         board = makeMove(board, heu_cost, temp)
         heu_cost = getHeuristic(board)
         # Make sure temp doesn't get impossibly low
@@ -148,7 +149,7 @@ def annealing(board):
         if temp >= 50000:
             break
 
-    return board
+    return board, count
 
 
 def makeMove(board, heu_cost, temp):
@@ -176,6 +177,37 @@ def makeMove(board, heu_cost, temp):
 
 
 # ------------------------------------------
+# Evaluation
+# :param heu_rrhc: heuristics for RR-HC
+# :param heu_annealing: heuristics for RR-SA
+# :param steepest_hill: List returned from the steepestHill() algorithm
+# :param steepest_hill_heu: Heuristic for the old_steepest_hill
+# :return: Lists of the number moves taken to reach a solution for RR-HC and RR-SA
+# ------------------------------------------
+def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
+    # Run our RR-HC and the RR-SA algorithms through boards ranging n=8 to n=25
+    # Find the best performing algorithm, i.e. the number of moves to reach optimal solution
+    i = 0
+    rrhc_moves = []
+    rrsa_moves = []
+    random_initial_board = getRandomNumbers(N)
+
+    while i < 17:
+
+        if heu_rrhc == 0:
+            solution_rrhc, rrhc_count = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
+            rrhc_moves.append(rrhc_count)
+
+        if heu_annealing == 0:
+            solution_annealing, sa_count = annealing(random_initial_board)
+            rrsa_moves.append(sa_count)
+
+        i += 1
+
+    return rrhc_moves, rrsa_moves
+
+
+# ------------------------------------------
 # Return a list of random numbers
 # ------------------------------------------
 def getRandomNumbers(num_queens):
@@ -183,7 +215,6 @@ def getRandomNumbers(num_queens):
     for n in range(num_queens):
         numbers.append(n)
     random.shuffle(numbers)
-
     return numbers
 
 
@@ -232,20 +263,73 @@ def main():
     print("------------------------------------------")
 
     # Random Restart Hill Climbing
-    solution = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
-    displayBoard(solution)
+    print("\nCorrect Answer found in RR-HC")
+    solution_rrhc, rrhc_count = randomRestartHillClimb(steepest_hill, steepest_hill_heu)
+    heu_rrhc = getHeuristic(solution_rrhc)
+    print(solution_rrhc)
+    print("Total moves:", rrhc_count)
+    displayBoard(solution_rrhc)
 
     print("\n------------------------------------------")
 
     # Simulated Annealing
     print("\nCorrect Answer found in Simulated Annealing")
-    simulated_annealing = annealing(random_initial_board)
-    print(simulated_annealing)
-    displayBoard(simulated_annealing)
+    solution_annealing, sa_count = annealing(random_initial_board)
+    heu_annealing = getHeuristic(solution_annealing)
+    print(solution_annealing)
+    print("Total moves:", sa_count)
+    displayBoard(solution_annealing)
+
+    print("\n------------------------------------------")
+
+    # Evaluation
+    print("\nEvaluation:")
+    rrhc_moves, rrsa_moves = evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu)
+    print(rrhc_moves)
+    print(rrsa_moves)
+
 
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
