@@ -3,6 +3,7 @@ import math
 import time
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.plotly as py
@@ -113,45 +114,27 @@ def randomRestartHillClimb(new_random, old_steepest_hill, old_steepest_hill_heu)
             return best_solution, count_new_solution
 
         # A solution was found for our steepest ascent algorithm. Print details and exit.
-        elif old_steepest_hill_heu == 0:
-            best_solution = old_steepest_hill
-            return best_solution, count_old_solution
-
-        # Otherwise, display which is the better algorithm
-        else:
-            if new_steepest_hill_heu < old_steepest_hill_heu:
-                count_new_solution += 1
-            else:
-                count_old_solution += 1
-
-        restart_count += 1
-
-    return best_solution, restart_count
-
-
-# ------------------------------------------
-# Simulated Annealing Algorithm
 # :param board: random board configuration
 # :return: solution configuration found and a running count
 # ------------------------------------------
 def simulatedAnnealing(board):
-    temp = len(board) ** 2
+    temp = 250000.0
     anneal_rate = 0.95
     heu_cost = getHeuristic(board)
     count = 0
 
     while heu_cost > 0:
-        count += 1
         board = makeMove(board, heu_cost, temp)
         heu_cost = getHeuristic(board)
         # Make sure temp doesn't get impossibly low
         new_temp = max(temp * anneal_rate, 0.01)
         temp = new_temp
+        count += 1
 
         # It is possible that the algorithm will get stuck.
         # To prevent this I have limited the iterations to 50000
         if count >= 50000:
-            return count
+            break
 
     return board, count
 
@@ -191,13 +174,14 @@ def makeMove(board, heu_cost, temp):
 # :return: Lists of the number moves taken to reach a solution for RR-HC and RR-SA
 # ------------------------------------------
 def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
-    board = 8
+    board_eight_queens = 8
+    board_twenty_five_queens = 25
     rrhc_moves = []
     rrsa_moves = []
-    while board <= 25:
+    while board_eight_queens <= board_twenty_five_queens:
 
-        random_board_rrsa = getRandomNumbers(board)
-        random_board_rrhc = getRandomNumbers(board)
+        random_board_rrsa = getRandomNumbers(board_eight_queens)
+        random_board_rrhc = getRandomNumbers(board_eight_queens)
 
         if heu_annealing == 0:
             solution_annealing, sa_count = simulatedAnnealing(random_board_rrsa)
@@ -208,7 +192,7 @@ def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
             solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
             rrhc_moves.append(rrhc_count)
             # print(board, "Queens Solution for RR-HC algorithm %s in %d moves" % (solution_rrhc, rrhc_count))
-        board += 1
+        board_eight_queens += 1
 
     return rrhc_moves, rrsa_moves
 
@@ -218,26 +202,38 @@ def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
 # ------------------------------------------
 def displayGraphs(rrhc_moves, rrsa_moves):
 
-    # Bar Chart
     if rrhc_moves != 0 and rrsa_moves != 0:
-        algos = ('RR-HC', 'RR-SA')
-        y_pos = np.arange(len(algos))
 
+        # Bar Chart consisting of the average moves of each algorithm takes to reach a solution.
+        # Taken from running our algorithms through boards ranging n=8 to n=25
         rrhc_np = np.array(rrhc_moves)
         rrhc_mean = np.mean(rrhc_np)
         rrsa_np = np.array(rrsa_moves)
         rrsa_mean = np.mean(rrsa_np)
+        displayBarChart("8-Queens to 25-Queens\n", rrhc_mean, rrsa_mean)
 
-        performance = [rrhc_mean, rrsa_mean]
 
-        plt.bar(y_pos, performance, align='center', alpha=0.5)
-        plt.xticks(y_pos, algos)
-        plt.ylabel("moves")
-        plt.title("N-Queens Mean Moves till Solution")
-        plt.show()
+        # BarChart for 8 Queens moves till solution for both algorithms
+        rrhc_eight_board_moves = rrhc_moves[0]
+        rrsa_eight_board_moves = rrsa_moves[0]
+        displayBarChart("8-Queens\n", rrhc_eight_board_moves, rrsa_eight_board_moves)
 
-        sns.distplot(rrhc_np)
-        plt.show()
+        # BarChart for 25 Queens moves till solution for both algorithms
+        rrhc_twentyfive_board_moves = rrhc_moves[-1]
+        rrsa_twentyfour_board_moves = rrsa_moves[-1]
+        displayBarChart("25-Queens\n", rrhc_twentyfive_board_moves, rrsa_twentyfour_board_moves)
+
+
+def displayBarChart(board, input1, input2):
+    algos = ('RR-HC', 'RR-SA')
+    y_pos = np.arange(len(algos))
+    performance = [input1, input2]
+    plt.bar(y_pos, performance, align='center', alpha=0.5)
+    plt.xticks(y_pos, algos)
+    plt.ylabel("moves")
+    title = board + "Mean Moves till Solution"
+    plt.title(title)
+    plt.show()
 
 
 # ------------------------------------------
@@ -300,10 +296,15 @@ def main():
     # Random Restart Hill Climbing
     print("\nCorrect Answer found in RR-HC")
     random_board_rrhc = getRandomNumbers(N)
-    solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
+    # solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
+
+    rr_results = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
+    solution_rrhc = rr_results[0]
+    rrhc_count = rr_results[1]
+
     heu_rrhc = getHeuristic(solution_rrhc)
     print(solution_rrhc)
-    print("Total moves:", rrhc_count, "\nHeuristic Value:", heu_rrhc)
+    print("Heuristic Value:", heu_rrhc, "\nTotal moves:", rrhc_count)
     displayBoard(solution_rrhc)
 
     print("\n------------------------------------------")
@@ -314,25 +315,24 @@ def main():
     solution_annealing, sa_count = simulatedAnnealing(random_board_sa)
     heu_annealing = getHeuristic(solution_annealing)
     print(solution_annealing)
-    print("Total moves:", sa_count, "\nHeuristic Value:", heu_annealing)
+    print("Heuristic Value:", heu_annealing, "\nTotal moves:", sa_count, )
     displayBoard(solution_annealing)
 
     print("\n------------------------------------------")
 
     # Evaluation
     print("\nEvaluation:")
+
+    # Checks if 'steepest_hill' is a List. In some cases it's returned as an int
     rrhc_moves, rrsa_moves = evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu)
+
     print("\n 17 runs of RR-HC", rrhc_moves)
     print("\n 17 runs of RR-SA", rrsa_moves)
-
     # Example:
     # 17 runs of RR-HC [22, 23, 160, 19, 41, 64, 44, 7, 48, 166, 49, 268, 62, 144, 178, 115, 80, 251]
     # 17 runs of RR-SA [171, 327, 192, 298, 264, 246, 322, 339, 404, 563, 698, 814, 208, 569, 432, 314, 881, 806]
 
     displayGraphs(rrhc_moves, rrsa_moves)
-
-
-
 
 
 if __name__ == '__main__':
