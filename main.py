@@ -195,11 +195,12 @@ def makeMove(board, heu_cost, temp):
 # :return: Lists of the number moves taken to reach a solution for RR-HC and RR-SA
 # ------------------------------------------
 def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
-    board_eight_queens = 8
+    board_eight_queens = N
     board_twenty_five_queens = 25
     rrhc_moves = []
     rrsa_moves = []
     while board_eight_queens <= board_twenty_five_queens:
+
 
         random_board_rrsa = getRandomNumbers(board_eight_queens)
         random_board_rrhc = getRandomNumbers(board_eight_queens)
@@ -223,34 +224,33 @@ def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
 # ------------------------------------------
 def displayGraphs(rrhc_moves, rrsa_moves):
     if rrhc_moves != 0 and rrsa_moves != 0:
-        # Bar Chart consisting of the average moves each algorithm takes to reach a solution.
+        # Bar Chart showing of the average moves each algorithm takes to reach a solution.
         # Taken from running our algorithms through boards ranging n=8 to n=25
         rrhc_np = np.array(rrhc_moves)
         rrhc_mean = np.mean(rrhc_np)
         rrsa_np = np.array(rrsa_moves)
         rrsa_mean = np.mean(rrsa_np)
-        displayBarChart("8-Queens to 25-Queens\n", rrhc_mean, rrsa_mean)
+        displayBarChart("8-Queens to 25-Queens\nMean Moves till Solution", "moves", rrhc_mean, rrsa_mean)
 
 
         # BarChart for 8 Queens moves till solution for both algorithms
         rrhc_eight_board_moves = rrhc_moves[0]
         rrsa_eight_board_moves = rrsa_moves[0]
-        displayBarChart("8-Queens\n", rrhc_eight_board_moves, rrsa_eight_board_moves)
+        displayBarChart("8-Queens\nMoves till Solution", "moves", rrhc_eight_board_moves, rrsa_eight_board_moves)
 
         # BarChart for 25 Queens moves till solution for both algorithms
         rrhc_twentyfive_board_moves = rrhc_moves[-1]
         rrsa_twentyfour_board_moves = rrsa_moves[-1]
-        displayBarChart("25-Queens\n", rrhc_twentyfive_board_moves, rrsa_twentyfour_board_moves)
+        displayBarChart("25-Queens\nMoves  till Solution", "moves", rrhc_twentyfive_board_moves, rrsa_twentyfour_board_moves)
 
 
-def displayBarChart(board, input1, input2):
+def displayBarChart(title, label, input1, input2):
     algos = ('RR-HC', 'RR-SA')
     y_pos = np.arange(len(algos))
     performance = [input1, input2]
     plt.bar(y_pos, performance, align='center', alpha=0.5)
     plt.xticks(y_pos, algos)
-    plt.ylabel("moves")
-    title = board + "Mean Moves till Solution"
+    plt.ylabel(label)
     plt.title(title)
     plt.show()
 
@@ -316,25 +316,34 @@ def main():
     print("------------------------------------------")
 
     # Random Restart Hill Climbing
-    print("\nCorrect Answer found in RR-HC")
+    rrhc_start_time = time.time()
     random_board_rrhc = getRandomNumbers(N)
     solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
-
     heu_rrhc = getHeuristic(solution_rrhc)
+    rrhc_processing_time = time.time() - rrhc_start_time
+
+    print("\nCorrect Answer found in RR-HC")
     print(solution_rrhc)
     print("Heuristic Value:", heu_rrhc, "\nTotal moves:", rrhc_count)
     displayBoard(solution_rrhc)
+    rrhc_execution_time = "Random Restart Hill processing time %s seconds" % rrhc_processing_time
+    print(rrhc_execution_time)
 
     print("\n------------------------------------------")
 
     # Simulated Annealing
-    print("\nCorrect Answer found in Simulated Annealing")
+    sa_start_time = time.time()
     random_board_sa = getRandomNumbers(N)
     solution_annealing, sa_count = simulatedAnnealing(random_board_sa)
     heu_annealing = getHeuristic(solution_annealing)
+    rrsa_processing_time = time.time() - sa_start_time
+
+    print("\nCorrect Answer found in Simulated Annealing")
     print(solution_annealing)
     print("Heuristic Value:", heu_annealing, "\nTotal moves:", sa_count, )
     displayBoard(solution_annealing)
+    rrsa_execution_time = "Simulated Annealing processing time %s seconds" % rrsa_processing_time
+    print(rrsa_execution_time)
 
     print("\n------------------------------------------")
 
@@ -351,6 +360,8 @@ def main():
     # 17 runs of RR-SA [171, 327, 192, 298, 264, 246, 322, 339, 404, 563, 698, 814, 208, 569, 432, 314, 881, 806]
 
     displayGraphs(rrhc_moves, rrsa_moves)
+
+    displayBarChart("Processing Time", "seconds", rrhc_processing_time, rrsa_processing_time)
 
 
 if __name__ == '__main__':
