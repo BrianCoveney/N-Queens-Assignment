@@ -86,6 +86,10 @@ def steepestHill(board):
         row = best_moves[pick][1]
         board[col] = row
 
+    # h = getHeuristic(board)
+    # if h == 0:
+    #     print(board)
+
     return board
 
 
@@ -113,7 +117,24 @@ def randomRestartHillClimb(new_random, old_steepest_hill, old_steepest_hill_heu)
             best_solution = new_random_steepest_hill
             return best_solution, count_new_solution
 
-        # A solution was found for our steepest ascent algorithm. Print details and exit.
+            # A solution was found for our steepest ascent algorithm. Print details and exit.
+        elif old_steepest_hill_heu == 0:
+            best_solution = old_steepest_hill
+            return best_solution, count_old_solution
+
+        # Otherwise, display which is the better algorithm
+        else:
+            if new_steepest_hill_heu < old_steepest_hill_heu:
+                count_new_solution += 1
+            else:
+                count_old_solution += 1
+
+        restart_count += 1
+
+    return best_solution, restart_count
+
+
+# A solution was found for our steepest ascent algorithm. Print details and exit.
 # :param board: random board configuration
 # :return: solution configuration found and a running count
 # ------------------------------------------
@@ -201,10 +222,8 @@ def evaluation(heu_rrhc, heu_annealing, steepest_hill, steepest_hill_heu):
 # Display Graphs for evaluation purposes
 # ------------------------------------------
 def displayGraphs(rrhc_moves, rrsa_moves):
-
     if rrhc_moves != 0 and rrsa_moves != 0:
-
-        # Bar Chart consisting of the average moves of each algorithm takes to reach a solution.
+        # Bar Chart consisting of the average moves each algorithm takes to reach a solution.
         # Taken from running our algorithms through boards ranging n=8 to n=25
         rrhc_np = np.array(rrhc_moves)
         rrhc_mean = np.mean(rrhc_np)
@@ -244,6 +263,8 @@ def getRandomNumbers(num_queens):
     for n in range(num_queens):
         numbers.append(n)
     random.shuffle(numbers)
+
+    numbers = [6,5,1,2,7,0,4,3]
     return numbers
 
 
@@ -269,9 +290,10 @@ def displayBoard(board):
 def main():
     # Random Initial State
     random_initial_board = getRandomNumbers(N)
-    displayBoard(random_initial_board)
-    print("Random Initial State:", random_initial_board)
+    print("Random Initial State\n", random_initial_board, sep="")
     print("Heuristic Value:", getHeuristic(random_initial_board))
+    displayBoard(random_initial_board)
+
 
     print("------------------------------------------")
 
@@ -296,11 +318,7 @@ def main():
     # Random Restart Hill Climbing
     print("\nCorrect Answer found in RR-HC")
     random_board_rrhc = getRandomNumbers(N)
-    # solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
-
-    rr_results = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
-    solution_rrhc = rr_results[0]
-    rrhc_count = rr_results[1]
+    solution_rrhc, rrhc_count = randomRestartHillClimb(random_board_rrhc, steepest_hill, steepest_hill_heu)
 
     heu_rrhc = getHeuristic(solution_rrhc)
     print(solution_rrhc)
